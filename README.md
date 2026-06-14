@@ -18,6 +18,50 @@ cliDesk 是一个跨平台 Electron 桌面应用，用于管理多个 Claude Cod
 - `xterm.js` 用于终端渲染。
 - Vite、esbuild 和 TypeScript 负责编译构建。
 
+## 使用流程
+
+### 安装使用流程
+
+```mermaid
+flowchart TD
+    A[下载 exe 安装包] --> B[运行安装程序]
+    B --> C{Windows 安全提示}
+    C -->|更多信息 → 仍要运行| D[完成安装]
+    D --> E[启动 cliDesk]
+    E --> F[新建会话]
+    F --> G[选择项目目录]
+    G --> H[启动 Claude Code]
+    H --> I[开始交互]
+```
+
+### 会话管理流程
+
+```mermaid
+flowchart TD
+    A[新建会话] --> B[设置会话名称]
+    B --> C[选择启动目录]
+    C --> D[会话创建成功]
+    D --> E[终端中运行 Claude Code]
+    E --> F{任务状态}
+    F -->|运行中| G[标签页实时监控]
+    F -->|完成/需关注| H[桌面通知弹窗提醒]
+    G --> F
+    H --> I[切换到对应会话查看]
+    I --> E
+```
+
+### 开发构建流程
+
+```mermaid
+flowchart LR
+    A[git clone] --> B[npm install]
+    B --> C[npm run dev]
+    C --> D[本地调试]
+    D --> E[npm run build]
+    E --> F[npm run package]
+    F --> G[生成 exe 安装包]
+```
+
 ## 使用案例
 ### 1、 持久化会话信息
 	新建时可以选择clade code 启动目录，以后可以不需要每次区文件夹打开目录再启动claude code
