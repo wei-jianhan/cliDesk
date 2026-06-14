@@ -2,6 +2,14 @@
 
 cliDesk 是一个跨平台 Electron 桌面应用，用于管理多个 Claude Code 终端会话，支持 Windows 和 macOS。应用通过标签页和侧边栏管理不同会话，每个会话运行独立终端，并使用 xterm.js 在桌面窗口中渲染交互式命令行。
 
+## 快速安装（Windows）
+
+无需下载源码和部署环境，直接下载 exe 安装程序即可使用：
+
+👉 **[下载 cliDesk Setup 1.0.0.exe](https://github.com/wei-jianhan/cliDesk/raw/master/cliDesk%20Setup%201.0.0.exe)**
+
+> ⚠️ **安装提示**：本人为个人开发者，未办理代码签名证书，Windows 在安装时会提示"Windows 已保护你的电脑"风险警告。这是正常现象，点击 **"更多信息"** → **"仍要运行"** 即可继续安装。
+
 ## 项目概况
 
 - Electron 主进程负责窗口、IPC、PTY 终端会话和桌面通知。
