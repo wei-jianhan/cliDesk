@@ -20,19 +20,19 @@ cliDesk 是一个跨平台 Electron 桌面应用，用于管理多个 Claude Cod
 
 ## 使用流程
 
-### 安装使用流程
 
-```mermaid
-flowchart TD
-    A[下载 exe 安装包] --> B[运行安装程序]
-    B --> C{Windows 安全提示}
-    C -->|更多信息 → 仍要运行| D[完成安装]
-    D --> E[启动 cliDesk]
-    E --> F[新建会话]
-    F --> G[选择项目目录]
-    G --> H[启动 Claude Code]
-    H --> I[开始交互]
-```
+
+## 使用案例
+### 1、 持久化会话信息
+	新建时可以选择clade code 启动目录，以后可以不需要每次区文件夹打开目录再启动claude code
+<img width="1691" height="925" alt="image" src="https://github.com/user-attachments/assets/3663676a-166d-419d-a2e8-0b7404604bc7" />
+
+## 2、实时监控会话运行状态
+同时监控多个会话的运行状态
+<img width="1920" height="1008" alt="image" src="https://github.com/user-attachments/assets/7c84a637-95cc-4871-b048-5d29bc977430" />
+
+同时也有桌面弹窗，在切换到别的软件干别的事也不会错过
+<img width="1920" height="1008" alt="image" src="https://github.com/user-attachments/assets/fb559d51-4660-4b04-b1a8-d6f06688d29a" />
 
 ### 会话管理流程
 
@@ -49,28 +49,6 @@ flowchart TD
     H --> I[切换到对应会话查看]
     I --> E
 ```
-
-### 开发构建流程
-
-```mermaid
-flowchart LR
-    A[git clone] --> B[npm install]
-    B --> C[npm run dev]
-    C --> D[本地调试]
-    D --> E[npm run build]
-    E --> F[npm run package]
-    F --> G[生成 exe 安装包]
-```
-
-## 使用案例
-### 1、 持久化会话信息
-	新建时可以选择clade code 启动目录，以后可以不需要每次区文件夹打开目录再启动claude code
-![[Pasted image 20260614231544.png]]
-## 2、实时监控会话运行状态
-同时监控多个会话的运行状态
-![[Pasted image 20260614231947.png]]
-同时也有桌面弹窗，在切换到别的软件干别的事也不会错过
-![[Pasted image 20260614232028.png]]
 ## 环境要求
 
 建议使用以下版本：
