@@ -36,6 +36,10 @@ interface Props {
   themeName: string
 }
 
+function writeToTerminal(sessionId: string, data: string) {
+  window.electronAPI?.writeToTerminal(sessionId, data)
+}
+
 export function SessionTerminal({ sessionId, active, themeName }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const xtermRef = useRef<XTerm | null>(null)
@@ -82,12 +86,44 @@ export function SessionTerminal({ sessionId, active, themeName }: Props) {
 
     term.open(containerRef.current)
 
+    // Ctrl+Shift+C → copy selection to clipboard
+    term.attachCustomKeyEventHandler((event) => {
+      if (event.type === 'keydown' && event.ctrlKey && event.shiftKey && event.key === 'C') {
+        const selection = term.getSelection()
+        if (selection) {
+          window.electronAPI?.copyToClipboard(selection)
+          return false
+        }
+      }
+      return true
+    })
+
     xtermRef.current = term
     fitAddonRef.current = fitAddon
 
-    // Keyboard input → main process
+    // Right-click: copy selection or paste
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault()
+      const selection = term.getSelection()
+      if (selection) {
+        window.electronAPI?.copyToClipboard(selection)
+      } else {
+        window.electronAPI?.readClipboardForTerminal().then((text) => {
+          if (text) window.electronAPI?.writeToTerminal(sessionId, text)
+        })
+      }
+    }
+    containerRef.current.addEventListener('contextmenu', handleContextMenu)
+
+    // Keyboard input → main process. Intercept Ctrl+V (\x16) for clipboard paste.
     term.onData((data) => {
-      window.electronAPI?.writeToTerminal(sessionId, data)
+      if (data === '\x16') {
+        window.electronAPI?.readClipboardForTerminal().then((text) => {
+          if (text) window.electronAPI?.writeToTerminal(sessionId, text)
+        })
+        return
+      }
+      writeToTerminal(sessionId, data)
     })
 
     // Sync terminal size to PTY so TUI apps render correctly
@@ -120,6 +156,7 @@ export function SessionTerminal({ sessionId, active, themeName }: Props) {
     return () => {
       unsubTerminalData?.()
       window.removeEventListener('resize', handleResize)
+      containerRef.current?.removeEventListener('contextmenu', handleContextMenu)
       observer.disconnect()
       term.dispose()
     }

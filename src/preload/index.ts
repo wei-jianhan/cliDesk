@@ -1,5 +1,39 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { clipboard, contextBridge, ipcRenderer } from 'electron'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import { randomUUID } from 'crypto'
 import type { IElectronAPI, CreateSessionOptions, SessionInfo } from '../shared/types'
+
+const imageExtensions = new Map<string, string>([
+  ['image/png', 'png'],
+  ['image/jpeg', 'jpg'],
+])
+
+function formatFilePaths(raw: string): string {
+  const paths = raw.replace(/\0+/g, '\n').trim().split('\n').filter(Boolean)
+  return paths.map((p) => (/\s/.test(p) ? `"${p.replace(/"/g, '\\"')}"` : p)).join(' ')
+}
+
+function readClipboardImagePath(): string {
+  const formats = clipboard.availableFormats()
+  const fileFormat = formats.find((format) => format.startsWith('FileName'))
+  if (fileFormat) {
+    return formatFilePaths(clipboard.read(fileFormat))
+  }
+
+  const imageFormat = formats.find((format) => imageExtensions.has(format))
+  if (!imageFormat) return ''
+
+  const image = clipboard.readImage()
+  if (image.isEmpty()) return ''
+
+  const extension = imageExtensions.get(imageFormat)
+  const imagePath = path.join(os.tmpdir(), `clidesk-clipboard-${randomUUID()}.${extension}`)
+  const imageData = imageFormat === 'image/jpeg' ? image.toJPEG(95) : image.toPNG()
+  fs.writeFileSync(imagePath, imageData)
+  return imagePath
+}
 
 const api: IElectronAPI = {
   createSession: (options: CreateSessionOptions): Promise<SessionInfo> => {
@@ -22,8 +56,17 @@ const api: IElectronAPI = {
     return ipcRenderer.invoke('session:list')
   },
 
+  readClipboardForTerminal: async (): Promise<string> => {
+    const imagePath = readClipboardImagePath()
+    return imagePath || clipboard.readText()
+  },
+
   selectDirectory: (): Promise<string | null> => {
     return ipcRenderer.invoke('dialog:select-directory')
+  },
+
+  copyToClipboard: (text: string) => {
+    clipboard.writeText(text)
   },
 
   writeToTerminal: (sessionId: string, data: string) => {

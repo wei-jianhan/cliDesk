@@ -27,6 +27,8 @@ export interface IElectronAPI {
   removeSession: (id: string) => Promise<void>
   listSessions: () => Promise<SessionInfo[]>
   selectDirectory: () => Promise<string | null>
+  readClipboardForTerminal: () => Promise<string>
+  copyToClipboard: (text: string) => void
   writeToTerminal: (sessionId: string, data: string) => void
   resizeTerminal: (sessionId: string, cols: number, rows: number) => void
   onTerminalData: (callback: (sessionId: string, data: string) => void) => () => void
