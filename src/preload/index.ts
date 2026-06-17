@@ -3,7 +3,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import type { IElectronAPI, CreateSessionOptions, SessionInfo } from '../shared/types'
+import type { IElectronAPI, CreateSessionOptions, SessionInfo, UpdateStatusEvent } from '../shared/types'
 
 const imageExtensions = new Map<string, string>([
   ['image/png', 'png'],
@@ -104,6 +104,18 @@ const api: IElectronAPI = {
   minimizeWindow: () => ipcRenderer.send('window:minimize'),
   maximizeWindow: () => ipcRenderer.send('window:maximize'),
   closeWindow: () => ipcRenderer.send('window:close'),
+
+  checkForUpdates: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  quitAndInstall: () => ipcRenderer.send('update:install'),
+
+  onUpdateStatus: (callback: (status: UpdateStatusEvent) => void) => {
+    const handler = (_event: any, status: UpdateStatusEvent) => {
+      callback(status)
+    }
+    ipcRenderer.on('update:status', handler)
+    return () => ipcRenderer.removeListener('update:status', handler)
+  },
 }
 
 contextBridge.exposeInMainWorld('electronAPI', api)

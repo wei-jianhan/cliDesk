@@ -3,6 +3,7 @@ import path from 'path'
 import { registerIpcHandlers } from './ipc-handlers'
 import { HookStatusServer } from './hook-status-server'
 import { SessionManager } from './session-manager'
+import { initAutoUpdater } from './auto-updater'
 
 let mainWindow: BrowserWindow | null = null
 let hookStatusServer: HookStatusServer | null = null
@@ -64,6 +65,7 @@ app.whenReady().then(async () => {
   sessionManager = new SessionManager((sessionId) => hookStatusServer ? `${hookStatusServer.url}?sessionId=${encodeURIComponent(sessionId)}` : null)
   registerIpcHandlers(sessionManager)
   createWindow()
+  initAutoUpdater()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

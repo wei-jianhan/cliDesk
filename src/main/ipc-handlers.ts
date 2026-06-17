@@ -2,6 +2,7 @@ import { ipcMain, BrowserWindow, screen, dialog } from 'electron'
 import { SessionManager } from './session-manager'
 import { CreateSessionOptions } from '../shared/types'
 import { sendNotification } from './notification'
+import { checkForUpdates, downloadUpdate, quitAndInstall } from './auto-updater'
 
 let preMaximizeBounds: { x: number; y: number; width: number; height: number } | null = null
 
@@ -86,4 +87,9 @@ export function registerIpcHandlers(sessionManager: SessionManager) {
   ipcMain.on('window:close', () => {
     BrowserWindow.getFocusedWindow()?.close()
   })
+
+  // Update handlers
+  ipcMain.handle('update:check', () => checkForUpdates())
+  ipcMain.handle('update:download', () => downloadUpdate())
+  ipcMain.handle('update:install', () => quitAndInstall())
 }

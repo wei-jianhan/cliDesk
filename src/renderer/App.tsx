@@ -1,10 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import { useAppStore } from './store/useAppStore'
 import { TabBar } from './components/TabBar'
 import { SessionSidebar } from './components/SessionSidebar'
 import { TerminalView } from './components/TerminalView'
+import type { UpdateStatusEvent } from '../shared/types'
 
 const themeOptions = ['深空紫', '经典黑', '海洋蓝', '森林绿', '暖砂棕', '亮白']
+const MIN_SIDEBAR_WIDTH = 180
+const MAX_SIDEBAR_WIDTH = 480
 
 export default function App() {
   const sidebarVisible = useAppStore((s) => s.sidebarVisible)
@@ -15,6 +18,30 @@ export default function App() {
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
   const isMac = window.navigator.platform.includes('Mac')
 
+  const [sidebarWidth, setSidebarWidth] = useState(256)
+  const dragRef = useRef<HTMLDivElement | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatusEvent | null>(null)
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = sidebarWidth
+
+    const onMouseMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - startX
+      const next = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, startWidth + delta))
+      setSidebarWidth(next)
+    }
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', onMouseUp)
+    }
+
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  }, [sidebarWidth])
+
   useEffect(() => {
     window.electronAPI?.listSessions().then(setSessions)
     return window.electronAPI?.onSessionStatusChanged(updateSessionStatus)
@@ -23,6 +50,10 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', themeName)
   }, [themeName])
+
+  useEffect(() => {
+    return window.electronAPI?.onUpdateStatus(setUpdateStatus)
+  }, [])
 
   return (
     <div className="flex flex-col h-screen">
@@ -54,6 +85,35 @@ export default function App() {
             {sidebarVisible ? '隐藏侧栏' : '显示侧栏'}
           </button>
           <span className="w-px h-4 bg-[var(--border-primary)] mx-1" />
+          {updateStatus?.status === 'available' ? (
+            <button
+              onClick={() => window.electronAPI?.downloadUpdate()}
+              className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors"
+            >
+              更新可用
+            </button>
+          ) : updateStatus?.status === 'downloading' ? (
+            <span className="text-xs text-cyan-400">
+              下载中 {updateStatus.percent?.toFixed(0)}%
+            </span>
+          ) : updateStatus?.status === 'downloaded' ? (
+            <button
+              onClick={() => window.electronAPI?.quitAndInstall()}
+              className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors"
+            >
+              重启安装
+            </button>
+          ) : updateStatus?.status === 'error' ? (
+            <span className="text-xs text-red-400">更新失败</span>
+          ) : (
+            <button
+              onClick={() => window.electronAPI?.checkForUpdates()}
+              className="text-[var(--text-dim)] hover:text-[var(--text-primary)] text-xs px-2 py-1 rounded hover:bg-[var(--border-primary)] transition-colors"
+            >
+              检查更新
+            </button>
+          )}
+          <span className="w-px h-4 bg-[var(--border-primary)] mx-1" />
           <button
             onClick={() => window.electronAPI?.minimizeWindow()}
             className="text-[var(--text-dim)] hover:text-[var(--text-primary)] w-8 h-7 flex items-center justify-center rounded hover:bg-[var(--border-primary)] transition-colors"
@@ -79,7 +139,16 @@ export default function App() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {sidebarVisible && <SessionSidebar />}
+        {sidebarVisible && (
+          <>
+            <SessionSidebar width={sidebarWidth} />
+            <div
+              ref={dragRef}
+              onMouseDown={handleMouseDown}
+              className="w-1 cursor-col-resize bg-[var(--border-primary)] hover:bg-[var(--accent)] active:bg-[var(--accent)] transition-colors shrink-0"
+            />
+          </>
+        )}
         <div className="flex flex-col flex-1 overflow-hidden">
           <TabBar />
           <TerminalView />

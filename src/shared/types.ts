@@ -38,6 +38,17 @@ export interface IElectronAPI {
   minimizeWindow: () => void
   maximizeWindow: () => void
   closeWindow: () => void
+  checkForUpdates: () => Promise<any>
+  downloadUpdate: () => Promise<any>
+  quitAndInstall: () => void
+  onUpdateStatus: (callback: (status: UpdateStatusEvent) => void) => () => void
+}
+
+export type UpdateStatus = 'available' | 'downloading' | 'downloaded' | 'error'
+
+export interface UpdateStatusEvent {
+  status: UpdateStatus
+  percent?: number
 }
 
 declare global {

@@ -12,7 +12,7 @@ function getPathSummary(workingDirectory: string): string {
     : normalized
 }
 
-export function SessionSidebar() {
+export function SessionSidebar({ width }: { width: number }) {
   const sessions = useAppStore((s) => s.sessions)
   const activeSessionId = useAppStore((s) => s.activeSessionId)
   const setActiveSession = useAppStore((s) => s.setActiveSession)
@@ -57,7 +57,10 @@ export function SessionSidebar() {
 
   return (
     <>
-      <div className="w-64 bg-[var(--bg-app)] border-r border-[var(--border-primary)] flex flex-col">
+      <div
+        className="bg-[var(--bg-app)] border-r border-[var(--border-primary)] flex flex-col shrink-0"
+        style={{ width }}
+      >
         <div className="p-3 border-b border-[var(--border-primary)]">
           <button
             onClick={() => setIsModalOpen(true)}

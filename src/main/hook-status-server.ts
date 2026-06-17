@@ -5,6 +5,7 @@ import { SessionStatus } from '../shared/types'
 const HOOK_STATUS_BY_EVENT: Record<string, SessionStatus | undefined> = {
   UserPromptSubmit: 'running',
   PermissionRequest: 'waiting',
+  PostToolUse: 'running',
   Stop: 'input_required',
   SessionEnd: 'pending',
 }

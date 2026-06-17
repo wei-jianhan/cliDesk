@@ -86,13 +86,15 @@ export function SessionTerminal({ sessionId, active, themeName }: Props) {
 
     term.open(containerRef.current)
 
-    // Ctrl+Shift+C → copy selection to clipboard
+    // Ctrl+C with selection → copy; Ctrl+Shift+C → copy; everything else passes through
     term.attachCustomKeyEventHandler((event) => {
-      if (event.type === 'keydown' && event.ctrlKey && event.shiftKey && event.key === 'C') {
-        const selection = term.getSelection()
-        if (selection) {
-          window.electronAPI?.copyToClipboard(selection)
-          return false
+      if (event.type === 'keydown' && event.ctrlKey && !event.metaKey && !event.altKey) {
+        if (event.key === 'c' || event.key === 'C') {
+          const selection = term.getSelection()
+          if (selection) {
+            window.electronAPI?.copyToClipboard(selection)
+            return false
+          }
         }
       }
       return true
